@@ -65,12 +65,26 @@ jobs:
             npm run build
           fi
 
-      - name: Deploy to Firebase
+      - name: Deploy to Firebase (service account)
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' }}
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' # GitHub Secret に Service Account JSON を登録してください
           channelId: live
           projectId: inventory-management-app-476d9 # .env.localのVITE_FIREBASE_PROJECT_IDと同じものに書き換えてください
-        # 動作ディレクトリに firebase.json を置いた場合は以下を有効化してください
-        # working-directory: inventory_management_app
+
+      - name: Deploy to Firebase (CI token)
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT == '' && secrets.FIREBASE_TOKEN != '' }}
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseToken: '${{ secrets.FIREBASE_TOKEN }}' # こちらは firebase login:ci で取得するトークンを GitHub Secret に登録してください
+          channelId: live
+          projectId: inventory-management-app-476d9
+
+      - name: Fail if no Firebase secrets
+        if: ${{ secrets.FIREBASE_SERVICE_ACCOUNT == '' && secrets.FIREBASE_TOKEN == '' }}
+        run: |
+          echo "Missing required secret: add FIREBASE_SERVICE_ACCOUNT (preferred) or FIREBASE_TOKEN to repository secrets."
+          exit 1
