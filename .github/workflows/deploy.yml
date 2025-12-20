@@ -56,6 +56,5 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' # ここでJSONキーを使用
-          entryPoint: inventory_management_app # firebase.json があるサブディレクトリ
           channelId: live # 本番環境にデプロイ
           projectId: inventory-management-app-476d9
