@@ -25,13 +25,13 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Debug: show repo files
+      - name: "Debug: show repo files"
         run: |
           echo "PWD: $(pwd)"
           echo "Listing root:" && ls -la
           echo "Listing inventory_management_app:" && ls -la inventory_management_app || true
 
-      - name: Debug: Node & npm versions
+      - name: "Debug: Node & npm versions"
         run: |
           node -v
           npm -v
