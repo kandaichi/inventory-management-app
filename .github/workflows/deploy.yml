@@ -37,20 +37,33 @@ jobs:
           npm -v
 
       - name: Install Dependencies (app)
-        working-directory: inventory_management_app
         run: |
-          echo "In directory: $(pwd)"
-          echo "Listing here:" && ls -la
-          echo "package.json present:" && cat package.json || true
-          if [ -f package-lock.json ]; then
-            npm ci
+          echo "PWD: $(pwd)"
+          echo "Repo listing:" && ls -la
+          if [ -d inventory_management_app ]; then
+            echo "inventory_management_app exists:" && ls -la inventory_management_app
+            if [ -f inventory_management_app/package-lock.json ]; then
+              npm ci --prefix inventory_management_app
+            else
+              npm --prefix inventory_management_app install
+            fi
           else
-            npm install
+            echo "inventory_management_app directory not found, trying root install"
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
           fi
 
       - name: Build (app)
-        working-directory: inventory_management_app
-        run: npm run build
+        run: |
+          if [ -d inventory_management_app ]; then
+            npm --prefix inventory_management_app run build
+          else
+            echo "inventory_management_app not found, running root build"
+            npm run build
+          fi
 
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
