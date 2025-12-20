@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug: workspace & files
+      - name: "Debug: workspace & files"
         continue-on-error: true
         run: |
           set -x
