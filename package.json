@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "viteå preview"
+    "preview": "vite preview"
   },
   "dependencies": {
     "firebase": "^10.8.0",

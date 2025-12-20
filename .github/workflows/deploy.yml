@@ -1,0 +1,33 @@
+name: Deploy to Firebase Hosting
+on:
+  push:
+    branches:
+      - main # mainブランチにプッシュされたときにトリガー
+  workflow_dispatch: # 手動で実行できるようにする
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies (app)
+        run: npm ci --prefix inventory_management_app
+
+      - name: Build (app)
+        run: npm --prefix inventory_management_app run build
+
+      - name: Deploy to Firebase
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' # GitHub Secret に Service Account JSON を登録してください
+          channelId: live
+          projectId: inventory-management-app-476d9 # .env.localのVITE_FIREBASE_PROJECT_IDと同じものに書き換えてください
+        # 動作ディレクトリに firebase.json を置いた場合は以下を有効化してください
+        # working-directory: inventory_management_app
