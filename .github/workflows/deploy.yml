@@ -1,97 +1,36 @@
 name: Deploy to Firebase Hosting
+
 on:
   push:
     branches:
-      - main # mainブランチにプッシュされたときにトリガー
-  workflow_dispatch: # 手動で実行できるようにする
+      - main # mainブランチへのプッシュで実行
+  workflow_dispatch: # 手動実行も可能にする
 
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    env:
-      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
     steps:
       - uses: actions/checkout@v4
-
-      - name: "Debug: workspace"
-        continue-on-error: true
-        run: |
-          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
-          pwd
-          echo "Listing root:" && ls -la
-          echo "Listing inventory_management_app:" && ls -la inventory_management_app || true
-          echo "Find package.json files:" && find . -name package.json -print || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18'
 
-      - name: "Debug: show repo files"
-        run: |
-          echo "PWD: $(pwd)"
-          echo "Listing root:" && ls -la
-          echo "Listing inventory_management_app:" && ls -la inventory_management_app || true
+      # 依存関係のインストール (ルートとフロントエンド両方)
+      - name: Install Dependencies
+        run: npm ci && npm --prefix inventory_management_app ci
 
-      - name: "Debug: Node & npm versions"
-        run: |
-          node -v
-          npm -v
+      # ビルド実行 (distフォルダが作成される)
+      - name: Build
+        run: npm run build
 
-      - name: Install Dependencies (app)
-        run: |
-          echo "PWD: $(pwd)"
-          echo "Repo listing:" && ls -la
-          if [ -d inventory_management_app ]; then
-            echo "inventory_management_app exists:" && ls -la inventory_management_app
-            if [ -f inventory_management_app/package-lock.json ]; then
-              npm ci --prefix inventory_management_app
-            else
-              npm --prefix inventory_management_app install
-            fi
-          else
-            echo "inventory_management_app directory not found, trying root install"
-            if [ -f package-lock.json ]; then
-              npm ci
-            else
-              npm install
-            fi
-          fi
-
-      - name: Build (app)
-        run: |
-          if [ -d inventory_management_app ]; then
-            npm --prefix inventory_management_app run build
-          else
-            echo "inventory_management_app not found, running root build"
-            npm run build
-          fi
-
-      - name: Deploy to Firebase (service account)
-        if: ${{ startsWith(env.FIREBASE_SERVICE_ACCOUNT, '{') }}
+      # Firebaseへのデプロイ
+      - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: ${{ env.FIREBASE_SERVICE_ACCOUNT }} # GitHub Secret の内容がJSONであることを期待します
-          channelId: live
-          projectId: inventory-management-app-476d9 # .env.localのVITE_FIREBASE_PROJECT_IDと同じものに書き換えてください
-
-      - name: Deploy to Firebase (CLI token)
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT == '' && env.FIREBASE_TOKEN != '' }}
-        run: |
-          echo "Deploying with firebase-tools using FIREBASE_TOKEN"
-          npm install -g firebase-tools
-          # If firebase.json is in the app folder, cd into it
-          if [ -f inventory_management_app/firebase.json ]; then
-            cd inventory_management_app
-          fi
-          firebase deploy --token "$FIREBASE_TOKEN" --project inventory-management-app-476d9 --only hosting
-        env:
-          FIREBASE_TOKEN: ${{ env.FIREBASE_TOKEN }}
-
-      - name: Fail if no Firebase secrets
-        if: ${{ env.FIREBASE_SERVICE_ACCOUNT == '' && env.FIREBASE_TOKEN == '' }}
-        run: |
-          echo "Missing required secret: add FIREBASE_SERVICE_ACCOUNT (preferred) or FIREBASE_TOKEN to repository secrets."
-          exit 1
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' # ここでJSONキーを使用
+          entryPoint: inventory_management_app # firebase.json があるサブディレクトリ
+          channelId: live # 本番環境にデプロイ
+          projectId: inventory-management-app-476d9
