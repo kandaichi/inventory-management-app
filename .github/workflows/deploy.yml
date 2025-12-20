@@ -29,15 +29,26 @@ jobs:
           else
             npm install
           fi
-          if [ -f inventory_management_app/package-lock.json ]; then
-            npm --prefix inventory_management_app ci
+          # Install frontend deps only if the subproject exists
+          if [ -f inventory_management_app/package.json ]; then
+            if [ -f inventory_management_app/package-lock.json ]; then
+              npm --prefix inventory_management_app ci
+            else
+              npm --prefix inventory_management_app install
+            fi
           else
-            npm --prefix inventory_management_app install
+            echo "No inventory_management_app/package.json found; skipping frontend install"
           fi
 
       # ビルド実行 (distフォルダが作成される)
       - name: Build
-        run: npm run build
+        run: |
+          # If the frontend subproject exists, build it directly; otherwise run root build
+          if [ -f inventory_management_app/package.json ]; then
+            npm --prefix inventory_management_app run build
+          else
+            npm run build
+          fi
 
       # Firebaseへのデプロイ
       - name: Deploy to Firebase
