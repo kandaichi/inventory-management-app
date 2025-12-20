@@ -19,7 +19,18 @@ jobs:
 
       # 依存関係のインストール (ルートとフロントエンド両方)
       - name: Install Dependencies
-        run: npm ci && npm --prefix inventory_management_app ci
+        run: |
+          # Use npm ci if a lockfile exists; otherwise fall back to npm install
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+          if [ -f inventory_management_app/package-lock.json ]; then
+            npm --prefix inventory_management_app ci
+          else
+            npm --prefix inventory_management_app install
+          fi
 
       # ビルド実行 (distフォルダが作成される)
       - name: Build
