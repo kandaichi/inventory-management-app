@@ -17,7 +17,13 @@ jobs:
           node-version: '18'
 
       - name: Install Dependencies (app)
-        run: npm ci --prefix inventory_management_app
+        run: |
+          # Use npm ci when a lockfile exists, otherwise fall back to npm install
+          if [ -f inventory_management_app/package-lock.json ]; then
+            npm ci --prefix inventory_management_app
+          else
+            npm --prefix inventory_management_app install
+          fi
 
       - name: Build (app)
         run: npm --prefix inventory_management_app run build
