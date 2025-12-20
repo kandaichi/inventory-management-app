@@ -16,17 +16,32 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Dependencies (app)
+      - name: Debug: show repo files
         run: |
-          # Use npm ci when a lockfile exists, otherwise fall back to npm install
-          if [ -f inventory_management_app/package-lock.json ]; then
-            npm ci --prefix inventory_management_app
+          echo "PWD: $(pwd)"
+          echo "Listing root:" && ls -la
+          echo "Listing inventory_management_app:" && ls -la inventory_management_app || true
+
+      - name: Debug: Node & npm versions
+        run: |
+          node -v
+          npm -v
+
+      - name: Install Dependencies (app)
+        working-directory: inventory_management_app
+        run: |
+          echo "In directory: $(pwd)"
+          echo "Listing here:" && ls -la
+          echo "package.json present:" && cat package.json || true
+          if [ -f package-lock.json ]; then
+            npm ci
           else
-            npm --prefix inventory_management_app install
+            npm install
           fi
 
       - name: Build (app)
-        run: npm --prefix inventory_management_app run build
+        working-directory: inventory_management_app
+        run: npm run build
 
       - name: Deploy to Firebase
         uses: FirebaseExtended/action-hosting-deploy@v0
