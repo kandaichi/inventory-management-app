@@ -11,18 +11,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Debug: workspace & files"
+      - name: "Debug: workspace"
         continue-on-error: true
         run: |
-          set -x
-          echo 'GITHUB_WORKSPACE: '$GITHUB_WORKSPACE
-          echo 'Runner work dir: '$(pwd)
-          echo 'Listing root:' && ls -la || true
-          echo 'Listing repo dir:' && ls -la "$GITHUB_WORKSPACE" || true
-          echo 'Top-level recursive listing (depth 3):' && find . -maxdepth 3 -type f -print -exec ls -l {} ';' || true
-          echo 'Find package.json files:' && find . -name package.json -print -exec ls -l {} ';' || true
-          echo 'Cat app package.json if present:' && (cat inventory_management_app/package.json || echo 'inventory_management_app/package.json not found')
-          echo 'Environment variables (sorted):' && env | sort
+          echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+          pwd
+          echo "Listing root:" && ls -la
+          echo "Listing inventory_management_app:" && ls -la inventory_management_app || true
+          echo "Find package.json files:" && find . -name package.json -print || true
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
