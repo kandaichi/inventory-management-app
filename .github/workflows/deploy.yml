@@ -9,6 +9,9 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    env:
+      NPM_CONFIG_AUDIT: 'false'    # disable npm audit in CI to avoid failing the job
+      NPM_CONFIG_FUND: 'false'     # suppress funding messages
     steps:
       - uses: actions/checkout@v4
 
