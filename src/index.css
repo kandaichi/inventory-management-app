@@ -4,5 +4,10 @@
 
 /* 基本的なスタイル */
 body {
-  @apply bg-slate-50 text-slate-800;
+  @apply bg-slate-50 text-slate-800 font-mplus;
+}
+
+:root {
+  --brand-rose: #FB7185;
+  --brand-rose-soft: #FDEBF0;
 }

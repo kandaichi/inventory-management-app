@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { auth, db, storage } from './firebase'; // firebase.tsからインポート
+import Logo from './components/Logo';
 import { 
   onAuthStateChanged, 
   signInAnonymously, 
@@ -252,7 +253,7 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, 'artifacts', 'smart-pantry-v1', 'public', 'data', 'inventory'));
+    const q = query(collection(db, 'artifacts', 'inventory-management-v1', 'public', 'data', 'inventory'));
     const unsub = onSnapshot(q, (snap) => {
       const list = snap.docs.map(d => ({ id: d.id, ...d.data() })) as InventoryItem[];
       setItems(list.sort((a, b) => new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()));
@@ -336,9 +337,9 @@ export default function App() {
 
       try {
         if (editingItem) {
-          await updateDoc(doc(db, 'artifacts', 'smart-pantry-v1', 'public', 'data', 'inventory', editingItem.id), cleanedSaveData);
+          await updateDoc(doc(db, 'artifacts', 'inventory-management-v1', 'public', 'data', 'inventory', editingItem.id), cleanedSaveData);
         } else {
-          await addDoc(collection(db, 'artifacts', 'smart-pantry-v1', 'public', 'data', 'inventory'), {
+          await addDoc(collection(db, 'artifacts', 'inventory-management-v1', 'public', 'data', 'inventory'), {
             ...cleanedSaveData,
             createdAt: Timestamp.now()
           });
@@ -356,7 +357,7 @@ export default function App() {
     }
   };
 
-  // ... (Other handlers like delete, restock are same as prototype but use 'smart-pantry-v1' as appId)
+  // ... (Other handlers like delete, restock are same as prototype but use 'inventory-management-v1' as appId)
 
   // Spinner, Image Preview Modal and ListItem components (from mock)
   const Spinner = () => (
@@ -510,18 +511,18 @@ export default function App() {
 
   const handleDeleteItem = async (id: string) => {
     if (confirm('削除しますか？')) {
-      await deleteDoc(doc(db, 'artifacts', 'smart-pantry-v1', 'public', 'data', 'inventory', id));
+      await deleteDoc(doc(db, 'artifacts', 'inventory-management-v1', 'public', 'data', 'inventory', id));
     }
   };
 
   const handleUpdateQuantity = async (id: string, q: number) => {
-    await updateDoc(doc(db, 'artifacts', 'smart-pantry-v1', 'public', 'data', 'inventory', id), { quantity: q });
+    await updateDoc(doc(db, 'artifacts', 'inventory-management-v1', 'public', 'data', 'inventory', id), { quantity: q });
   };
 
   const handleRestock = async (item: InventoryItem) => {
     const isLevel = UNIT_DEFINITIONS[item.unit]?.type === 'level';
     const newQty = isLevel ? 100 : 1;
-    await updateDoc(doc(db, 'artifacts', 'smart-pantry-v1', 'public', 'data', 'inventory', item.id), { quantity: newQty, purchaseDate: new Date().toISOString().split('T')[0] });
+    await updateDoc(doc(db, 'artifacts', 'inventory-management-v1', 'public', 'data', 'inventory', item.id), { quantity: newQty, purchaseDate: new Date().toISOString().split('T')[0] });
   };
 
   const filteredItems = items.filter(item => {
@@ -541,17 +542,22 @@ export default function App() {
   if (!currentLocation) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-        <h1 className="text-2xl font-bold mb-8 text-slate-800 flex items-center gap-2">
-          <Refrigerator className="text-emerald-600" size={28} /> Smart Pantry
-        </h1>
+        <header className="mb-6 text-center">
+          <div className="inline-flex items-center gap-3 justify-center">
+            <div className="flex items-center">
+              <Logo />
+            </div>
+          </div>
+        </header>
+
         <div className="grid gap-4 w-full max-w-sm">
-          <button onClick={() => setCurrentLocation('kitchen')} className="bg-white p-8 rounded-2xl shadow-lg border border-emerald-100 flex flex-col items-center hover:bg-emerald-50 transition-colors">
-            <Utensils size={40} className="text-emerald-600 mb-2"/>
+          <button aria-label="キッチン" onClick={() => setCurrentLocation('kitchen')} className="bg-white p-8 rounded-3xl shadow-lg ring-1 ring-rose-100 flex flex-col items-center hover:shadow-xl transition">
+            <Utensils size={40} className="text-rose-500 mb-2"/>
             <span className="font-bold text-slate-700">キッチン</span>
           </button>
-          <button onClick={() => setCurrentLocation('washroom')} className="bg-white p-8 rounded-2xl shadow-lg border border-blue-100 flex flex-col items-center hover:bg-blue-50 transition-colors">
-            <Droplet size={40} className="text-blue-600 mb-2"/>
-            <span className="font-bold text-slate-700">洗面所・浴室</span>
+          <button aria-label="洗面所" onClick={() => setCurrentLocation('washroom')} className="bg-white p-8 rounded-3xl shadow-lg ring-1 ring-indigo-100 flex flex-col items-center hover:shadow-xl transition">
+            <Droplet size={40} className="text-indigo-500 mb-2"/>
+            <span className="font-bold text-slate-700">洗面所</span>
           </button>
         </div>
       </div>
