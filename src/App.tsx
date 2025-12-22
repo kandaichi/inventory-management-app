@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { auth, db, storage } from './firebase'; // firebase.tsからインポート
 import Logo from './components/Logo';
 import { 
@@ -395,6 +396,7 @@ export default function App() {
     onRestock: (item: InventoryItem) => void
   }) => {
     const [expanded, setExpanded] = useState(false);
+    const [showDelete, setShowDelete] = useState(false);
     const today = new Date();
     const expiry = new Date(item.expiryDate);
     const diffTime = expiry.getTime() - today.getTime();
@@ -427,11 +429,24 @@ export default function App() {
       }
     };
 
+    // スワイプで削除ボタン表示
+    const swipeHandlers = useSwipeable({
+      onSwipedLeft: () => setShowDelete(true),
+      onSwipedRight: () => setShowDelete(false),
+      trackMouse: true,
+    });
+
     return (
-      <div className={`bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors ${isOutOfStock ? 'bg-slate-50/60' : ''}`}>
-        <div className="flex items-center p-3 gap-3 cursor-pointer" onClick={() => setExpanded(!expanded)}>
+      <div className={`relative bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors ${isOutOfStock ? 'bg-slate-50/60' : ''}`}
+        {...swipeHandlers}
+        onMouseLeave={() => setShowDelete(false)}
+      >
+        <div className={`flex items-center p-3 gap-3 cursor-pointer transition-transform duration-200 ${showDelete ? 'translate-x-[-80px]' : ''}`}
+          onClick={() => setExpanded(!expanded)}
+          style={{ transform: showDelete ? 'translateX(-80px)' : 'translateX(0)', transition: 'transform 0.2s' }}
+        >
           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOutOfStock ? 'bg-slate-300' : getCategoryColor(item.category)}`} />
-          <div className={`flex-1 min-w-0 ${isOutOfStock ? 'opacity-60' : ''}`}>
+          <div className={`flex-1 min-w-0 ${isOutOfStock ? 'opacity-60' : ''}`}> 
             <div className="flex justify-between items-start mb-1">
               <h3 className="font-bold text-slate-800 text-sm truncate pr-2">{item.name}</h3>
               <span className={`flex-shrink-0 px-2 py-0.5 rounded text-[10px] whitespace-nowrap ${statusColor}`}>{statusText}</span>
@@ -452,6 +467,12 @@ export default function App() {
             )}
             <div className="text-slate-300 pl-1">{expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</div>
           </div>
+        </div>
+        {/* スワイプで出現する削除ボタン */}
+        <div className={`absolute top-0 right-0 h-full flex items-center pr-4 transition-opacity duration-200 ${showDelete ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          style={{ zIndex: 2 }}
+        >
+          <button onClick={(e) => { e.stopPropagation(); onDelete(item.id); setShowDelete(false); }} className="flex items-center gap-1 px-4 py-2 bg-rose-600 text-white rounded-lg text-xs shadow hover:bg-rose-700"><Trash2 size={16} /> 削除</button>
         </div>
         {expanded && (
           <div className="bg-slate-50 px-4 py-3 text-sm border-t border-slate-100">
@@ -482,6 +503,20 @@ export default function App() {
   // --- App rendering logic (mock UI integrated with Firebase actions) ---
 
   const [viewMode, setViewMode] = useState<ViewMode>('inventory');
+  // タブ順序
+  const viewModes: ViewMode[] = ['inventory', 'expiring', 'out_of_stock'];
+  const viewModeIndex = viewModes.indexOf(viewMode);
+
+  // スワイプでタブ切り替え
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (viewModeIndex < viewModes.length - 1) setViewMode(viewModes[viewModeIndex + 1]);
+    },
+    onSwipedRight: () => {
+      if (viewModeIndex > 0) setViewMode(viewModes[viewModeIndex - 1]);
+    },
+    trackMouse: true,
+  });
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [filterText, setFilterText] = useState('');
   const [viewingImageItem, setViewingImageItem] = useState<InventoryItem | null>(null);
@@ -586,7 +621,8 @@ export default function App() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-3xl mx-auto p-4 space-y-4">
+      {/* スワイプでタブ切り替え */}
+      <main className="max-w-3xl mx-auto p-4 space-y-4" {...swipeHandlers}>
         <div className="flex gap-2">
           <div className="relative min-w-[120px]">
              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><Filter size={14} className="text-slate-400" /></div>
