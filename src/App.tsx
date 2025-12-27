@@ -30,7 +30,7 @@ import {
   Refrigerator, AlertTriangle, Package, ArrowLeft, 
   Image as ImageIcon, Utensils, Droplet, Home, Filter, 
   RefreshCw, ShoppingCart, Minus, Battery, 
-  BatteryMedium, BatteryLow, BatteryWarning 
+  BatteryMedium, BatteryLow, BatteryWarning, Carrot, Fish, Soup, CupSoda, Candy, SprayCan, Smile, Tag, Snowflake
 } from 'lucide-react';
 
 // --- Types ---
@@ -429,21 +429,12 @@ export default function App() {
       }
     };
 
-    // スワイプで削除ボタン表示
-    const swipeHandlers = useSwipeable({
-      onSwipedLeft: () => setShowDelete(true),
-      onSwipedRight: () => setShowDelete(false),
-      trackMouse: true,
-    });
-
+    // スワイプ削除廃止
     return (
       <div className={`relative bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors ${isOutOfStock ? 'bg-slate-50/60' : ''}`}
-        {...swipeHandlers}
-        onMouseLeave={() => setShowDelete(false)}
       >
-        <div className={`flex items-center p-3 gap-3 cursor-pointer transition-transform duration-200 ${showDelete ? 'translate-x-[-80px]' : ''}`}
+        <div className={`flex items-center p-3 gap-3 cursor-pointer transition-transform duration-200`}
           onClick={() => setExpanded(!expanded)}
-          style={{ transform: showDelete ? 'translateX(-80px)' : 'translateX(0)', transition: 'transform 0.2s' }}
         >
           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOutOfStock ? 'bg-slate-300' : getCategoryColor(item.category)}`} />
           <div className={`flex-1 min-w-0 ${isOutOfStock ? 'opacity-60' : ''}`}> 
@@ -526,6 +517,28 @@ export default function App() {
   const defaultCategories = currentLocation === 'kitchen'
     ? ['冷蔵品', '冷凍品', '野菜', '肉・魚', '調味料', '飲料', '乾物', 'お菓子', '日用品', 'その他']
     : ['日用品', '洗剤', '化粧品', 'オーラルケア', 'ヘアケア', '掃除用品', 'その他'];
+
+  // カテゴリアイコン・色マップ
+  const categoryMeta: Record<string, { color: string, icon: JSX.Element }> = {
+    '冷蔵品': { color: 'bg-blue-400', icon: <Refrigerator size={14} className="text-blue-500" /> },
+    '冷凍品': { color: 'bg-cyan-400', icon: <Snowflake size={14} className="text-cyan-500" /> },
+    '野菜': { color: 'bg-green-400', icon: <Carrot size={14} className="text-green-500" /> },
+    '肉・魚': { color: 'bg-red-400', icon: <Fish size={14} className="text-red-500" /> },
+    '調味料': { color: 'bg-amber-400', icon: <Soup size={14} className="text-amber-500" /> },
+    '飲料': { color: 'bg-indigo-400', icon: <CupSoda size={14} className="text-indigo-500" /> },
+    '乾物': { color: 'bg-yellow-400', icon: <Package size={14} className="text-yellow-500" /> },
+    'お菓子': { color: 'bg-pink-400', icon: <Candy size={14} className="text-pink-500" /> },
+    '日用品': { color: 'bg-orange-400', icon: <Tag size={14} className="text-orange-500" /> },
+    '洗剤': { color: 'bg-purple-400', icon: <SprayCan size={14} className="text-purple-500" /> },
+    '化粧品': { color: 'bg-pink-300', icon: <Smile size={14} className="text-pink-400" /> },
+    'オーラルケア': { color: 'bg-teal-400', icon: <Smile size={14} className="text-teal-500" /> },
+    'ヘアケア': { color: 'bg-lime-400', icon: <Smile size={14} className="text-lime-500" /> },
+    '掃除用品': { color: 'bg-gray-400', icon: <SprayCan size={14} className="text-gray-500" /> },
+    'その他': { color: 'bg-slate-300', icon: <Tag size={14} className="text-slate-400" /> },
+  };
+
+  const getCategoryColor = (cat: string) => categoryMeta[cat]?.color || 'bg-slate-300';
+  const getCategoryIcon = (cat: string) => categoryMeta[cat]?.icon || <Tag size={14} className="text-slate-400" />;
   const [categories, setCategories] = useState<string[]>(defaultCategories);
   const [newCategory, setNewCategory] = useState('');
 
@@ -622,7 +635,7 @@ export default function App() {
           <button onClick={() => setCurrentLocation(null)} className="text-slate-400 hover:text-slate-600 p-2"><Home size={20} /></button>
         </div>
         {/* タブUI: Xのタブ風デザイン */}
-        <div className="max-w-3xl mx-auto flex border-b-2 border-slate-200 mb-2">
+        <div className="max-w-3xl mx-auto flex border-b-2 border-slate-200 mb-2" {...swipeHandlers}>
           <button
             onClick={() => { setViewMode('inventory'); setSelectedCategory('all'); }}
             className={`flex-1 py-2 text-sm font-bold text-center border-b-4 transition-all
@@ -654,39 +667,52 @@ export default function App() {
       {/* タブUIで切り替え（スワイプ廃止） */}
       <main className="max-w-3xl mx-auto p-4 space-y-4">
         <div className="flex gap-2">
-          <div className="relative min-w-[120px]">
-             <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><Filter size={14} className="text-slate-400" /></div>
-             <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full pl-8 pr-8 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none text-xs appearance-none truncate font-medium">
-               <option value="all">全カテゴリ</option>
-               {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-             </select>
-             <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><ChevronDown size={14} className="text-slate-400" /></div>
-             {/* カテゴリ追加UI */}
-             <div className="flex mt-2 gap-1">
-               <input
-                 type="text"
-                 value={newCategory}
-                 onChange={e => setNewCategory(e.target.value)}
-                 placeholder="カテゴリ追加"
-                 className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs"
-                 maxLength={12}
-               />
-               <button
-                 className="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400"
-                 disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
-                 onClick={() => {
-                   const cat = newCategory.trim();
-                   if (cat && !categories.includes(cat)) {
-                     setCategories([...categories, cat]);
-                     setNewCategory('');
-                   }
-                 }}
-               >追加</button>
-             </div>
+          <div className="relative min-w-[140px] flex flex-col justify-between">
+            <div className="flex items-center gap-1 mb-1">
+              <Filter size={14} className="text-slate-400" />
+              <span className="text-xs text-slate-500">カテゴリ</span>
+            </div>
+            <div className="relative">
+              <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full pl-8 pr-8 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none text-xs appearance-none truncate font-medium">
+                <option value="all">全カテゴリ</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">{getCategoryIcon(selectedCategory !== 'all' ? selectedCategory : 'その他')}</div>
+              <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><ChevronDown size={14} className="text-slate-400" /></div>
+            </div>
+            {/* カテゴリ追加UI */}
+            <div className="flex mt-2 gap-1">
+              <input
+                type="text"
+                value={newCategory}
+                onChange={e => setNewCategory(e.target.value)}
+                placeholder="カテゴリ追加"
+                className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs"
+                maxLength={12}
+              />
+              <button
+                className="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400"
+                disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
+                onClick={() => {
+                  const cat = newCategory.trim();
+                  if (cat && !categories.includes(cat)) {
+                    setCategories([...categories, cat]);
+                    setNewCategory('');
+                  }
+                }}
+              >追加</button>
+            </div>
           </div>
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input type="text" placeholder="検索..." value={filterText} onChange={(e) => setFilterText(e.target.value)} className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-xs" />
+          <div className="relative flex-1 flex flex-col justify-between">
+            <div className="flex items-center gap-1 mb-1">
+              <Search size={16} className="text-slate-400" />
+              <span className="text-xs text-slate-500">検索</span>
+            </div>
+            <input type="text" placeholder="検索..." value={filterText} onChange={(e) => setFilterText(e.target.value)} className="w-full pl-3 pr-4 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-xs" />
           </div>
         </div>
 
@@ -765,6 +791,29 @@ export default function App() {
                     <select value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none">
                       {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                     </select>
+                    {/* カテゴリ追加UI（モーダル用） */}
+                    <div className="flex mt-2 gap-1">
+                      <input
+                        type="text"
+                        value={newCategory}
+                        onChange={e => setNewCategory(e.target.value)}
+                        placeholder="カテゴリ追加"
+                        className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs"
+                        maxLength={12}
+                      />
+                      <button
+                        className="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400"
+                        disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
+                        onClick={() => {
+                          const cat = newCategory.trim();
+                          if (cat && !categories.includes(cat)) {
+                            setCategories([...categories, cat]);
+                            setNewCategory('');
+                            setFormData((prev: any) => ({ ...prev, category: cat }));
+                          }
+                        }}
+                      >追加</button>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">単位</label>
