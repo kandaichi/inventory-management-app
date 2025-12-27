@@ -522,9 +522,17 @@ export default function App() {
   const [viewingImageItem, setViewingImageItem] = useState<InventoryItem | null>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
-  const categories = currentLocation === 'kitchen'
+  // カテゴリ追加機能
+  const defaultCategories = currentLocation === 'kitchen'
     ? ['冷蔵品', '冷凍品', '野菜', '肉・魚', '調味料', '飲料', '乾物', 'お菓子', '日用品', 'その他']
     : ['日用品', '洗剤', '化粧品', 'オーラルケア', 'ヘアケア', '掃除用品', 'その他'];
+  const [categories, setCategories] = useState<string[]>(defaultCategories);
+  const [newCategory, setNewCategory] = useState('');
+
+  // currentLocationが変わったらカテゴリリストも初期化
+  useEffect(() => {
+    setCategories(defaultCategories);
+  }, [currentLocation]);
 
   const openAddModal = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -613,16 +621,38 @@ export default function App() {
           </div>
           <button onClick={() => setCurrentLocation(null)} className="text-slate-400 hover:text-slate-600 p-2"><Home size={20} /></button>
         </div>
-        <div className="max-w-3xl mx-auto flex p-1 bg-slate-100 rounded-lg">
-          <button onClick={() => { setViewMode('inventory'); setSelectedCategory('all'); }} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === 'inventory' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}>在庫あり</button>
-          <button onClick={() => { setViewMode('expiring'); setSelectedCategory('all'); }} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1 ${viewMode === 'expiring' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500'}`}><AlertTriangle size={12} /> 期限直前</button>
-          <button onClick={() => { setViewMode('out_of_stock'); setSelectedCategory('all'); }} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all flex items-center justify-center gap-1 ${viewMode === 'out_of_stock' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500'}`}><ShoppingCart size={12} /> 在庫切れ</button>
+        {/* タブUI: Xのタブ風デザイン */}
+        <div className="max-w-3xl mx-auto flex border-b-2 border-slate-200 mb-2">
+          <button
+            onClick={() => { setViewMode('inventory'); setSelectedCategory('all'); }}
+            className={`flex-1 py-2 text-sm font-bold text-center border-b-4 transition-all
+              ${viewMode === 'inventory' ? 'border-emerald-500 text-emerald-700 bg-white shadow' : 'border-transparent text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+            style={{ borderRadius: '12px 12px 0 0' }}
+          >
+            在庫あり
+          </button>
+          <button
+            onClick={() => { setViewMode('expiring'); setSelectedCategory('all'); }}
+            className={`flex-1 py-2 text-sm font-bold text-center border-b-4 transition-all flex items-center justify-center gap-1
+              ${viewMode === 'expiring' ? 'border-rose-500 text-rose-600 bg-white shadow' : 'border-transparent text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+            style={{ borderRadius: '12px 12px 0 0' }}
+          >
+            <AlertTriangle size={14} /> 期限直前
+          </button>
+          <button
+            onClick={() => { setViewMode('out_of_stock'); setSelectedCategory('all'); }}
+            className={`flex-1 py-2 text-sm font-bold text-center border-b-4 transition-all flex items-center justify-center gap-1
+              ${viewMode === 'out_of_stock' ? 'border-slate-800 text-slate-800 bg-white shadow' : 'border-transparent text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+            style={{ borderRadius: '12px 12px 0 0' }}
+          >
+            <ShoppingCart size={14} /> 在庫切れ
+          </button>
         </div>
       </header>
 
       {/* Main Content */}
-      {/* スワイプでタブ切り替え */}
-      <main className="max-w-3xl mx-auto p-4 space-y-4" {...swipeHandlers}>
+      {/* タブUIで切り替え（スワイプ廃止） */}
+      <main className="max-w-3xl mx-auto p-4 space-y-4">
         <div className="flex gap-2">
           <div className="relative min-w-[120px]">
              <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><Filter size={14} className="text-slate-400" /></div>
@@ -631,6 +661,28 @@ export default function App() {
                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
              </select>
              <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><ChevronDown size={14} className="text-slate-400" /></div>
+             {/* カテゴリ追加UI */}
+             <div className="flex mt-2 gap-1">
+               <input
+                 type="text"
+                 value={newCategory}
+                 onChange={e => setNewCategory(e.target.value)}
+                 placeholder="カテゴリ追加"
+                 className="flex-1 px-2 py-1 border border-slate-200 rounded text-xs"
+                 maxLength={12}
+               />
+               <button
+                 className="px-2 py-1 bg-emerald-500 text-white text-xs rounded hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400"
+                 disabled={!newCategory.trim() || categories.includes(newCategory.trim())}
+                 onClick={() => {
+                   const cat = newCategory.trim();
+                   if (cat && !categories.includes(cat)) {
+                     setCategories([...categories, cat]);
+                     setNewCategory('');
+                   }
+                 }}
+               >追加</button>
+             </div>
           </div>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
