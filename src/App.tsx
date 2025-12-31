@@ -676,15 +676,17 @@ export default function App() {
       <main className="max-w-3xl mx-auto p-4 space-y-4">
         <div className="flex gap-2">
           {/* カテゴリフィルター */}
-          <div className="relative min-w-[140px]">
-            <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">{getCategoryIcon(selectedCategory !== 'all' ? selectedCategory : 'その他')}</div>
-            <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full pl-8 pr-8 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none text-xs appearance-none truncate font-medium">
-              <option value="all">全カテゴリ</option>
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none"><ChevronDown size={14} className="text-slate-400" /></div>
+          <div className="relative min-w-[140px] flex flex-col justify-start">
+            <div className="relative flex items-center w-full">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 pl-2 flex items-center pointer-events-none h-full">{getCategoryIcon(selectedCategory !== 'all' ? selectedCategory : 'その他')}</div>
+              <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="w-full pl-8 pr-8 py-2.5 bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none text-xs appearance-none truncate font-medium h-[40px]">
+                <option value="all">全カテゴリ</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+              <div className="absolute right-0 top-1/2 -translate-y-1/2 pr-2 flex items-center pointer-events-none h-full"><ChevronDown size={16} className="text-slate-400" /></div>
+            </div>
             {/* カテゴリ追加UI */}
             <div className="flex mt-2 gap-1">
               <input
