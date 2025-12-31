@@ -723,8 +723,6 @@ export default function App() {
               style={{ position: 'relative' }}
             />
           </div>
-          // 検索窓の拡大状態
-          const [searchFocused, setSearchFocused] = useState(false);
         </div>
 
         <div>
