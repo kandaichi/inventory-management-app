@@ -712,7 +712,7 @@ export default function App() {
           </div>
           {/* 検索 */}
           <div className="relative flex-1">
-            <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none"><Search size={16} className="text-slate-400" /></div>
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 pl-2 flex items-center pointer-events-none z-10"><Search size={16} className="text-slate-400" /></div>
             <input
               type="text"
               placeholder="検索..."
