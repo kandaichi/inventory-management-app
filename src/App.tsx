@@ -711,8 +711,8 @@ export default function App() {
             </div>
           </div>
           {/* 検索 */}
-          <div className="relative flex-1">
-            <div className="absolute left-0 top-0 bottom-0 pl-2 flex items-center pointer-events-none z-10">
+          <div className="relative flex items-center w-full">
+            <div className="absolute left-0 top-0 bottom-0 pl-2 flex items-center pointer-events-none h-full z-10">
               <Search className="text-slate-400 w-5 h-5" />
             </div>
             <input
@@ -723,7 +723,7 @@ export default function App() {
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
               onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
-              className={`w-full pl-10 pr-4 py-2.5 h-[40px] bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-base ${searchFocused ? 'scale-110 z-10 shadow-2xl' : ''}`}
+              className={`w-full pl-8 pr-4 py-2.5 h-[40px] bg-white border border-slate-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-base ${searchFocused ? 'scale-110 z-10 shadow-2xl' : ''}`}
               style={{ position: 'relative' }}
             />
           </div>
